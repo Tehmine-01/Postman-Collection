@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "fcd1a8f8-8b3f-492a-8be7-249d01633a91",
+		"name": "Add_Balance_Loop Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10132166"
+	},
+	"item": [
+		{
+			"name": "configuration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"url\", \"https://qwallity-prod.onrender.com\")\r",
+							"pm.environment.set(\"username\", \"lllus\")\r",
+							"pm.environment.set(\"password\", \"lllus123\")\r",
+							"//pm.environment.set(\"added_balance_list\", [])\r",
+							"pm.environment.set(\"added_balance_count\", 3)\r",
+							"pm.environment.set(\"sum\", 0)\r",
+							"\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://postman-echo.com/get",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var resp_token = JSON.parse(responseBody);\r",
+							"pm.environment.set(\"token\", resp_token.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/login/api",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login",
+						"api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_account_balance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var first_balance = JSON.parse(responseBody)\r",
+							"pm.environment.set(\"FirstBalance\", first_balance.balance);\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/balance/balance_api/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"balance",
+						"balance_api",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_account_balance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"var data_ = JSON.parse(request.data)\r",
+							"var req_amount = data_.amount\r",
+							"\r",
+							"var sum_ = pm.environment.get(\"sum\")\r",
+							"\r",
+							"var count = pm.environment.get(\"added_balance_count\")\r",
+							"\r",
+							"count--;\r",
+							"if ( count > 0 )  {\r",
+							"    pm.environment.set(\"added_balance_count\", count);\r",
+							"    postman.setNextRequest(\"add_account_balance\")\r",
+							"    pm.environment.set(\"sum\", (sum_ + Number(req_amount)))\r",
+							"    \r",
+							"}\r",
+							"else {\r",
+							"    postman.setNextRequest(\"get_account_last_balance\")\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"random_amount\", _.random(1,5))\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"amount\": \"{{random_amount}}\",\r\n  \"payment\": \"1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/add_account_balance/payment_api",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"add_account_balance",
+						"payment_api"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_account_last_balance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var last_balance = JSON.parse(responseBody)\r",
+							"pm.environment.set(\"LastBalance\", last_balance.balance);\r",
+							"\r",
+							"var first_balance_ = pm.environment.get(\"FirstBalance\")\r",
+							"\r",
+							"var _random_amount = pm.environment.get(\"random_amount\")\r",
+							"\r",
+							"var sum_ = pm.environment.get(\"sum\");\r",
+							"sum_ = sum_ +  _random_amount\r",
+							"\r",
+							"pm.test(\"Check if balance is correct added 3 time\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(Number(pm.environment.get(\"LastBalance\"))).to.eql(Number(first_balance_) + Number(sum_));\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/balance/balance_api/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"balance",
+						"balance_api",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clear_env",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// pm.environment.clear();\r",
+							"pm.environment.clear()"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://postman-echo.com/get",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"get"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
